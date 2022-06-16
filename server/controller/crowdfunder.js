@@ -34,15 +34,33 @@ const crowdfunderSchema = (req, res, next) => {
 };
 
 
+// const storage = multer.diskStorage({
+//   destination: async (req, file, cb) => {
+//     cb(null, '/uploads');
+//   },
+//   filename: (req, file, callback) => {
+//     const ext = file.originalname.split(".");
+//     callback(null, Date.now() + "." + ext[1]);
+//   },
+// });
+
 const storage = multer.diskStorage({
   destination: async (req, file, cb) => {
-    cb(null, '/uploads');
+    const path = './uploads'
+    try {
+      await access(path)
+    } catch {
+      await mkdir(path, { recursive: true })
+    }
+    cb(null, path)
   },
+
   filename: (req, file, callback) => {
     const ext = file.originalname.split(".");
     callback(null, Date.now() + "." + ext[1]);
   },
-});
+
+})
 
 const upload = multer({
   storage: storage,
@@ -61,9 +79,10 @@ const upload = multer({
 });
 
 
-Router.post('/upload_photo', upload.single('photo'), async(req, res) => {
- console.log(req.file)
-})
+
+// Router.post('/upload_photo', upload.single('photo'), async(req, res) => {
+//  console.log(req.file)
+// })
 
 Router.get('/', async (req, res) => {
   const crowdfunder = await getAll()
@@ -86,13 +105,14 @@ Router.get('/user/:UserId', async (req,res) => {
   }
 })
 
-Router.post("/create", auth, async (req, res) => {
-  console.log(req.files)
+Router.post("/create", auth, upload.single('cf_image'), async (req, res) => {
+
   if (
     await exists({
-      UserId: req.body.UserId,
+    UserId: req.body.UserId,
     })
   ) {
+
     res.json({
       status: "danger",
       message: "Crowdfunding was already created for this account",
@@ -100,28 +120,52 @@ Router.post("/create", auth, async (req, res) => {
     return;
   }
 
-
+  if(req.file)
+  req.body.cf_image = req.file.filename
   if(await insert(req.body)) {
-    res.json({status: 'success', message: 'Fund raiser was created'})
+  res.json({status: 'success', message: 'Fund raiser was created'})
 } else {
-    res.json({status: 'danger', message: 'Error'})
+  res.json({status: 'danger', message: 'Error'})
 }
-  // if (req.files.cf_image) {
-  //   let path = req.files.cf_image[0].path.replaceAll("\\", "/");
-  //   req.body.cf_image = path;
-  // }
 
-  // let ProfileId = false;
-  // if ((ProfileId = await insert(req.body))) {
-  //   req.files.portfolio_items.map(async (image) => {
-  //     let path = image.path.replaceAll("\\", "/");
-  //     await portfolioInsert({ image_url: path, ProfileId });
-  //   });
-  //   res.json({ status: "success", message: "Fundraiser successfully created" });
-  // } else {
-  //   res.json({ status: "danger", message: "Error occured creating crowdfunder" });
-  // }
 });
+
+// Be nuotraukos
+// Router.post("/create", auth, async (req, res) => {
+//   console.log(req.files)
+//   if (
+//     await exists({
+//       UserId: req.body.UserId,
+//     })
+//   ) {
+//     res.json({
+//       status: "danger",
+//       message: "Crowdfunding was already created for this account",
+//     });
+//     return;
+//   }
+
+//   if(await insert(req.body)) {
+//     res.json({status: 'success', message: 'Fund raiser was created'})
+// } else {
+//     res.json({status: 'danger', message: 'Error'})
+// }
+//   // if (req.files.cf_image) {
+//   //   let path = req.files.cf_image[0].path.replaceAll("\\", "/");
+//   //   req.body.cf_image = path;
+//   // }
+
+//   // let ProfileId = false;
+//   // if ((ProfileId = await insert(req.body))) {
+//   //   req.files.portfolio_items.map(async (image) => {
+//   //     let path = image.path.replaceAll("\\", "/");
+//   //     await portfolioInsert({ image_url: path, ProfileId });
+//   //   });
+//   //   res.json({ status: "success", message: "Fundraiser successfully created" });
+//   // } else {
+//   //   res.json({ status: "danger", message: "Error occured creating crowdfunder" });
+//   // }
+// });
 
 // Router.post('/upload',upload.single('profile_image'), profileSchema, async (req,res) => {
 //     res.send('Done')

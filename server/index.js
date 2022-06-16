@@ -6,7 +6,6 @@ import {getUser} from './service/users.js'
 import cookieParser from 'cookie-parser'
 import  crowdfunder from './controller/crowdFunder.js'
 
-
 const app = express()
 
 app.use( express.urlencoded({
@@ -17,6 +16,7 @@ app.use(express.json())
 app.use(cookieParser())
 app.use('/api/users', users)
 app.use('/api/crowdfunder', crowdfunder)
+app.use('/uploads', express.static('uploads'))
 
 app.get('/checkAuth', auth, async (req, res) => {
   const userData = await getUser(req.authData.id)

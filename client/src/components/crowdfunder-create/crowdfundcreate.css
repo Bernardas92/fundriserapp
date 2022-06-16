@@ -6,3 +6,7 @@
  label {
     text-align: left;
 }
+
+.form-control {
+    width: 100px;
+}
