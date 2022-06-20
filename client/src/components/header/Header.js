@@ -3,29 +3,20 @@ import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "./Header.css";
 
-
-
 export default (props) => {
-
-  const navigate =useNavigate()
+  const navigate = useNavigate();
 
   const onLogout = () => {
-    axios.get('/api/users/logout')
-    .then(resp => {
-      if(!resp.data.id) {
-        props.setLoggedIn(false)
-        navigate('/')
-        // window.location.reload()
-      } 
-    })
-  }
-//     try{
-//     axios.get('/api/users/logout')
-//       props.isLoggedIn = false
-//     } catch{
-//       props.isLoggedIn = true
-//     }
-// }
+    axios
+      .get("/api/users/logout")
+      .then(() => {
+        props.handleLoginState(false);
+        navigate("/");
+      })
+      .catch((e) => {
+        console.log("Server is offline");
+      });
+  };
 
   return (
     <div className="header">
@@ -66,22 +57,23 @@ export default (props) => {
               <strong>Create a Crowdfunder</strong>
             </Link>
           )}
-          
+
           {props.userRole === 1 && (
             <Link className="item" to="/admin">
               Admin panel
             </Link>
           )}
           {props.loggedIn === true && (
-            <button onClick={onLogout} style={{border:'none'}} className="item" to="/">
+            <button
+              onClick={onLogout}
+              style={{ border: "none" }}
+              className="item"
+              to="/"
+            >
               Logout
             </button>
           )}
-          {props.email && (
-            <div className="item">
-              User: {props.email}
-            </div>
-          )}
+          {props.email && <div className="item">User: {props.email}</div>}
         </div>
       </div>
     </div>
